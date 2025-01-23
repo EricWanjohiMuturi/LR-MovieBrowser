@@ -1,47 +1,80 @@
 import React from 'react'
 import { MovieCard } from '../UI/MovieCard'
-import { SearchForm } from '../UI/SearchForm'
+import { Input, Button } from "@material-tailwind/react";
+import { useState, useEffect } from 'react';
+import { searchMovies, getPopularMovies } from '../../services/api';
 
 const Home = () => {
-    const movies = [
-        {
-            id: 1,
-            title: "Pirates of the Caribbean",
-            release_date: "2009"
-        },
-        {
-            id: 2,
-            title: "John Wick",
-            release_date: "2009"
-        },
-        {
-            id: 3,
-            title: "Rush Hour",
-            release_date: "2009"
-        },
-        {
-            id: 4,
-            title: "The Incredibles",
-            release_date: "2009"
-        },
-        {
-            id: 5,
-            title: "Terminator",
-            release_date: "2006"
-        },
-        {
-            id: 6,
-            title: "The Matrix",
-            release_date: "2000"
-        },
-    ]
+    
+    const [movies, setMovies] = useState([]);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);  
+
+    useEffect(() => {
+        const loadPopularMovies = async () =>{
+            try{
+                const popularMovies = await getPopularMovies();
+                setMovies(popularMovies);
+            }catch (err){
+                console.log(err);
+                setError("Failed to load movies...");
+            }
+            finally{
+                setLoading(false);
+            }
+        }
+
+        loadPopularMovies();
+    },[]);
+
+    const handleSearch  = async (e) => {
+        e.preventDefault();
+        if (!searchQuery.trim()) return;
+        if (loading) return;
+
+        setLoading(true);
+        try{
+            const searchResults = await searchMovies(searchQuery);
+            setMovies(searchResults);
+            setError(null);
+        }catch(err){
+            console.log(err);
+            setError("Failed to load movies...");
+        }finally{
+            setLoading(false);
+        }
+        setSearchQuery("");
+    }
 
   return (
     <>
-        <SearchForm />
-        <div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-            {movies.map((movie) => (<MovieCard movie={movie} key={movie.id}/>))}
-        </div>
+        <form onSubmit={handleSearch} action="" method='post' className='flex w-auto justify-center gap-2 my-10'>
+            <Input 
+              label='search for movies..'
+              placeholder='searching for movies...'
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <Button
+                size="md"
+                variant="gradient"
+                color="black"
+                className=" rounded"
+                type="submit"
+                
+            >
+                Search
+            </Button>
+        </form>
+
+        {error ? (<div> {error} </div>) : null}
+
+        {loading ? (<div> loading </div>) : ( 
+            <div className='grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+                {movies.map((movie) => (<MovieCard movie={movie} key={movie.id}/>))}
+            </div>
+        )}
     </>
   )
 }

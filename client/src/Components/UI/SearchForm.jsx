@@ -1,12 +1,16 @@
 import React from "react";
 import { Input, Button } from "@material-tailwind/react";
+import { useState } from "react";
  
 export function SearchForm() {
   /* const [email, setEmail] = React.useState(""); */
-  const onChange = ({ target }) => setEmail(target.value);
+  const [searchQuery, setSearchQuery] = useState("");
+  
 
-  const handleSearch = () => {
-
+  const handleSearch = (e) => {
+    alert(searchQuery);
+    e.preventDefault()
+    setSearchQuery("");
   }
  
   return (
@@ -24,13 +28,15 @@ export function SearchForm() {
             <Input 
             size="md" 
             label="Search for movies..." 
-            onChange={onChange}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             />
             <Button
                 size="md"
                 variant="gradient"
                 color="black"
                 className=" rounded"
+                type="submit"
             >
                 Search
             </Button>
